@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marks Register App</title>
+  <!-- PWA Web App Manifest & App Icon Link -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0F5132">
+<link rel="apple-touch-icon" href="icon.png">
+
+
+    <!-- jsPDF Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #0F5132;
+            --primary-light: #198754;
+            --bg-color: #F4F6F9;
+            --card-bg: #FFFFFF;
+            --text-dark: #212529;
+            --border-color: #E0E0E0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            padding: 15px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background-color: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .form-group input, .form-group select {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-light);
+        }
+
+        .title-input {
+            width: 100%;
+            padding: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            border: 2px solid var(--primary-light);
+            border-radius: 6px;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-light);
+            color: white;
+            flex: 2;
+        }
+
+        .btn-pdf {
+            background-color: #DC3545;
+            color: white;
+            flex: 1;
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #F8F9FA;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .delete-btn {
+            background: #FF4D4D;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .grade-badge {
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #E9ECEF;
+        }
+
+        .summary-box {
+            margin-top: 25px;
+            padding: 15px;
+            background: #F8F9FA;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .summary-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+            gap: 8px;
+            text-align: center;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #E2E8F0;
+        }
+
+        .summary-card div:first-child {
+            font-weight: bold;
+            color: var(--primary-light);
+            font-size: 13px;
+        }
+
+        .summary-card div:last-child {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Marks Register</h1>
+    </div>
+
+    <!-- Entry Form -->
+    <div class="card">
+        <div class="card-title">Add Student Record</div>
+        <form id="markForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="classSelect">Class</label>
+                    <select id="classSelect" required>
+                        <option value="8">Class 8</option>
+                        <option value="9">Class 9</option>
+                        <option value="10">Class 10</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="divisionInput">Division</label>
+                    <input type="text" id="divisionInput" placeholder="e.g. A" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="nameInput">Student Name</label>
+                    <input type="text" id="nameInput" placeholder="Enter name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="marksInput">Mark (Max 40)</label>
+                    <input type="number" id="marksInput" min="0" max="40" step="0.5" placeholder="0 - 40" required>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary">Save Entry</button>
+                <button type="button" class="btn btn-pdf" id="pdfBtn">Export PDF</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Records & PDF Settings -->
+    <div class="card">
+        <div class="form-group">
+            <label for="pdfTitleInput">Register Title (Class, Division, Subject):</label>
+            <input type="text" id="pdfTitleInput" class="title-input" value="Class Marks Register (Max: 40)">
+        </div>
+
+        <div class="filter-section">
+            <select id="filterClassDiv" style="padding: 8px; border-radius:6px; font-weight: 500; flex:1;">
+                <option value="ALL">All Classes & Divisions</option>
+            </select>
+
+            <select id="sortBy" style="padding: 8px; border-radius:6px; font-weight: 500;">
+                <option value="NAME">Sort: Name (A to Z)</option>
+                <option value="MARKS">Sort: Mark (High to Low)</option>
+            </select>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sl. No</th>
+                        <th>Name</th>
+                        <th>Mark</th>
+                        <th>Grade</th>
+                        <th>Percentage</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="studentTableBody">
+                    <!-- Dynamic Data Rows -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Grade Summary Stats -->
+        <div class="summary-box">
+            <div class="summary-title">Grade Summary</div>
+            <div class="summary-grid" id="summaryGrid">
+                <!-- Summary Dynamic Cards -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let students = JSON.parse(localStorage.getItem("students_data")) || [];
+
+        const markForm = document.getElementById("markForm");
+        const studentTableBody = document.getElementById("studentTableBody");
+        const filterClassDiv = document.getElementById("filterClassDiv");
+        const sortBy = document.getElementById("sortBy");
+        const pdfBtn = document.getElementById("pdfBtn");
+        const summaryGrid = document.getElementById("summaryGrid");
+
+        // Grading Rules
+        function calculateGrade(cls, mark) {
+            mark = parseFloat(mark);
+            if (cls === "8") {
+                if (mark >= 32) return "A";
+                if (mark >= 24) return "B";
+                if (mark >= 16) return "C";
+                if (mark >= 12) return "D";
+                return "E";
+            } else {
+                if (mark >= 36) return "A+";
+                if (mark >= 32) return "A";
+                if (mark >= 28) return "B+";
+                if (mark >= 24) return "B";
+                if (mark >= 20) return "C+";
+                if (mark >= 16) return "C";
+                if (mark >= 12) return "D+";
+                if (mark >= 8)  return "D";
+                return "E";
+            }
+        }
+
+        // Populate Class & Division Filter Options Dynamically
+        function updateFilterOptions() {
+            const currentValue = filterClassDiv.value;
+            filterClassDiv.innerHTML = '<option value="ALL">All Classes & Divisions</option>';
+
+            const uniqueDivisions = [...new Set(students.map(s => `${s.class}-${s.division}`))].sort();
+
+            uniqueDivisions.forEach(item => {
+                const [cls, div] = item.split('-');
+                const option = document.createElement("option");
+                option.value = item;
+                option.textContent = `Class ${cls} - ${div}`;
+                filterClassDiv.appendChild(option);
+            });
+
+            filterClassDiv.value = currentValue;
+        }
+
+        // Get Filtered & Sorted Student Array
+        function getProcessedStudents() {
+            const selectedFilter = filterClassDiv.value;
+            const sortOption = sortBy.value;
+
+            let filtered = students.filter(s => {
+                if (selectedFilter === "ALL") return true;
+                return `${s.class}-${s.division}` === selectedFilter;
+            });
+
+            if (sortOption === "NAME") {
+                filtered.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+            } else if (sortOption === "MARKS") {
+                filtered.sort((a, b) => b.marks - a.marks);
+            }
+
+            return filtered;
+        }
+
+        // Calculate Grade Distribution Counts
+        function getGradeCounts(studentList) {
+            const counts = { "A+": 0, "A": 0, "B+": 0, "B": 0, "C+": 0, "C": 0, "D+": 0, "D": 0, "E": 0 };
+            studentList.forEach(s => {
+                if (counts[s.grade] !== undefined) {
+                    counts[s.grade]++;
+                }
+            });
+            return counts;
+        }
+
+        // Add Record
+        markForm.addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const studentClass = document.getElementById("classSelect").value;
+            const division = document.getElementById("divisionInput").value.trim().toUpperCase();
+            const name = document.getElementById("nameInput").value.trim();
+            const marks = parseFloat(document.getElementById("marksInput").value);
+
+            const percentage = ((marks / 40) * 100).toFixed(1) + "%";
+            const grade = calculateGrade(studentClass, marks);
+
+            const newStudent = {
+                id: Date.now(),
+                class: studentClass,
+                division: division,
+                name: name,
+                marks: marks,
+                percentage: percentage,
+                grade: grade
+            };
+
+            students.push(newStudent);
+            
+            saveAndRender();
+            filterClassDiv.value = `${studentClass}-${division}`;
+            renderTable();
+
+            document.getElementById("nameInput").value = "";
+            document.getElementById("marksInput").value = "";
+        });
+
+        function saveAndRender() {
+            localStorage.setItem("students_data", JSON.stringify(students));
+            updateFilterOptions();
+            renderTable();
+        }
+
+        // Render Web Table & Grade Summary
+        function renderTable() {
+            studentTableBody.innerHTML = "";
+            const currentStudents = getProcessedStudents();
+
+            currentStudents.forEach((student, index) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td style="text-align:left;">${student.name}</td>
+                    <td>${student.marks} / 40</td>
+                    <td><span class="grade-badge">${student.grade}</span></td>
+                    <td>${student.percentage}</td>
+                    <td><button class="delete-btn" onclick="deleteStudent(${student.id})">Delete</button></td>
+                `;
+                studentTableBody.appendChild(row);
+            });
+
+            // Update Web Grade Summary Box
+            const gradeCounts = getGradeCounts(currentStudents);
+            summaryGrid.innerHTML = "";
+            
+            Object.keys(gradeCounts).forEach(grade => {
+                const card = document.createElement("div");
+                card.className = "summary-card";
+                card.innerHTML = `<div>${grade}</div><div>${gradeCounts[grade]}</div>`;
+                summaryGrid.appendChild(card);
+            });
+        }
+
+        function deleteStudent(id) {
+            students = students.filter(s => s.id !== id);
+            saveAndRender();
+        }
+
+        filterClassDiv.addEventListener("change", renderTable);
+        sortBy.addEventListener("change", renderTable);
+
+        // Export PDF according to Filter and Sort Selection
+        pdfBtn.addEventListener("click", function() {
+            const currentStudents = getProcessedStudents();
+
+            if (currentStudents.length === 0) {
+                alert("No records available to export for this selection!");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const customTitle = document.getElementById("pdfTitleInput").value.trim() || "Marks Register";
+
+            doc.setFontSize(14);
+            doc.text(customTitle, 14, 15);
+
+            const pdfData = currentStudents.map((s, index) => [
+                index + 1,
+                s.name,
+                `${s.marks}/40`,
+                s.grade,
+                s.percentage
+            ]);
+
+            // Main Student Marks Table
+            doc.autoTable({
+                head: [['Sl. No', 'Name', 'Mark', 'Grade', 'Percentage']],
+                body: pdfData,
+                startY: 22,
+                theme: 'grid',
+                headStyles: { fillColor: [15, 81, 50] },
+                styles: { halign: 'center' },
+                columnStyles: { 1: { halign: 'left' } }
+            });
+
+            // Grade Summary Table at the Bottom of PDF
+            const gradeCounts = getGradeCounts(currentStudents);
+            const summaryHead = Object.keys(gradeCounts);
+            const summaryBody = [Object.values(gradeCounts).map(String)];
+
+            let finalY = doc.lastAutoTable.finalY + 12;
+
+            // Check if summary fits on page or needs new page
+            if (finalY + 30 > doc.internal.pageSize.height) {
+                doc.addPage();
+                finalY = 20;
+            }
+
+            doc.setFontSize(11);
+            doc.text("Grade Summary", 14, finalY);
+
+            doc.autoTable({
+                head: [summaryHead],
+                body: summaryBody,
+                startY: finalY + 4,
+                theme: 'plain',
+                headStyles: { fillColor: [230, 230, 230], textColor: [0, 0, 0], fontStyle: 'bold' },
+                styles: { halign: 'center', cellPadding: 3, fontSize: 10, lineColor: [200, 200, 200], lineWidth: 0.1 }
+            });
+
+            doc.save(`${customTitle.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`);
+        });
+
+        // Initial Load
+        updateFilterOptions();
+        renderTable();
+    </script>
+</body>
+</html>
